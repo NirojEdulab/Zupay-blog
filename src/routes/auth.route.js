@@ -7,6 +7,7 @@ import {
   updateUser,
   getUserInfo,
   getAllUsers,
+  checkUsername,
 } from "../controllers/auth.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { upload } from "../middlewares/multer.middleware.js";
@@ -16,6 +17,7 @@ const router = Router();
 router.post("/register", registerUser);
 router.post("/login", loginUser);
 router.get("/user/:id", getUserInfo);
+router.get("/checkUsername/:username", checkUsername);
 
 // Secured Routes
 router.get("/verify", verifyJWT, verifyToken);

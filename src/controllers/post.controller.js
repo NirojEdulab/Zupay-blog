@@ -24,6 +24,10 @@ const getAllPosts = async (req, res) => {
     });
   } catch (error) {
     console.log("Error while getAllPosts: ", error);
+    return res.json({
+      status: 500,
+      message: "Internal server error. Please try again later.",
+    });
   }
 };
 
@@ -60,6 +64,10 @@ const getSinglePost = async (req, res) => {
     });
   } catch (error) {
     console.log("Error while getSinglePost: ", error);
+    return res.json({
+      status: 500,
+      message: "Internal server error. Please try again later.",
+    });
   }
 };
 
@@ -118,6 +126,10 @@ const createPost = async (req, res) => {
     });
   } catch (error) {
     console.log("Error while createPost: ", error);
+    return res.json({
+      status: 500,
+      message: "Internal server error. Please try again later.",
+    });
   }
 };
 
@@ -180,6 +192,10 @@ const updatePost = async (req, res) => {
     });
   } catch (error) {
     console.log("Error while updatePost: ", error);
+    return res.json({
+      status: 500,
+      message: "Internal server error. Please try again later.",
+    });
   }
 };
 
@@ -225,6 +241,10 @@ const deletePost = async (req, res) => {
     });
   } catch (error) {
     console.log("Error while deletePost: ", error);
+    return res.json({
+      status: 500,
+      message: "Internal server error. Please try again later.",
+    });
   }
 };
 

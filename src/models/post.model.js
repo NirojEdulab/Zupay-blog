@@ -29,6 +29,7 @@ const postSchema = new Schema(
         fullName: String,
         email: String,
         profilePic: String,
+        coverImage: String,
       },
       required: true,
     },

@@ -41,6 +41,10 @@ const addComment = async (req, res) => {
     });
   } catch (error) {
     console.log("Error on AddComment: ", error);
+    return res.json({
+      status: 500,
+      message: "Internal server error. Please try again later.",
+    });
   }
 };
 
@@ -69,6 +73,10 @@ const deleteComment = async (req, res) => {
     });
   } catch (error) {
     console.log("Error on deleteComment: ", error);
+    return res.json({
+      status: 500,
+      message: "Internal server error. Please try again later.",
+    });
   }
 };
 

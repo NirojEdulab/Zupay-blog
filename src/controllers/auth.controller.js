@@ -18,9 +18,9 @@ const generateAccessTokenByUserId = async (userId) => {
     return { accessToken };
   } catch (error) {
     console.log("Something went wrong while generating the access token!!!");
-    res.json({
+    return res.json({
       status: 500,
-      message: "Server Error",
+      message: "Internal server error. Please try again later.",
     });
   }
 };
@@ -34,9 +34,27 @@ const verifyToken = async (req, res) => {
       user: user,
     });
   } catch (error) {
-    return res.status(500).json({
+    return res.json({
       status: 500,
-      message: error.message || "Server Error",
+      message: "Internal server error. Please try again later.",
+    });
+  }
+};
+
+const checkUsername = async (req, res) => {
+  try {
+    const { username } = req.params;
+    const user = await User.findOne({ username });
+
+    if (user) {
+      return res.json({ available: false });
+    } else {
+      return res.json({ available: true });
+    }
+  } catch (error) {
+    return res.json({
+      status: 500,
+      message: "Internal server error. Please try again later.",
     });
   }
 };
@@ -61,13 +79,13 @@ const registerUser = async (req, res) => {
     if (existingUser) {
       res.json({
         status: 409,
-        message: "Duplicate not allowed.",
+        message: "Email or Username already exists...",
       });
       return;
     }
 
     const user = await User.create({
-      username: username.toLowerCase(),
+      username: username,
       fullName,
       email,
       password,
@@ -90,9 +108,9 @@ const registerUser = async (req, res) => {
     });
   } catch (error) {
     console.log("User register ERROR: ", error);
-    res.json({
+    return res.json({
       status: 500,
-      message: "Server Error",
+      message: "Internal server error. Please try again later.",
     });
   }
 };
@@ -144,9 +162,9 @@ const loginUser = async (req, res) => {
     });
   } catch (error) {
     console.log("User Login ERROR: ", error);
-    res.json({
+    return res.json({
       status: 500,
-      message: "Server Error",
+      message: "Internal server error. Please try again later.",
     });
   }
 };
@@ -172,8 +190,6 @@ const updateUser = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-
-    console.log("req.file==>> ", req.files);
 
     // Handle profile picture update
     if (
@@ -221,15 +237,29 @@ const updateUser = async (req, res) => {
 
     // Save the updated user
     const updatedUser = await user.save();
+
+    // Update all posts with the new profile picture and cover image
+    await Post.updateMany(
+      { "author._id": userId },
+      {
+        $set: {
+          "author.profilePic": user.profilePic,
+          "author.coverImage": user.coverImage,
+          "author.username": user.username,
+          "author.fullName": user.fullName,
+          "author.email": user.email,
+        },
+      }
+    );
     res.status(200).json({
       message: "User updated successfully",
       user: updatedUser,
       status: 200,
     });
   } catch (error) {
-    res.json({
+    return res.json({
       status: 500,
-      message: "Server Error",
+      message: "Internal server error. Please try again later.",
     });
     console.log("User update ERROR: ", error);
   }
@@ -250,6 +280,8 @@ const getUserInfo = async (req, res) => {
     let userData = await User.findById(userId).select("-password");
     const userPosts = await Post.find({
       "author._id": userId,
+    }).sort({
+      createdAt: -1,
     });
 
     if (!userData) {
@@ -260,8 +292,11 @@ const getUserInfo = async (req, res) => {
       return;
     }
 
+    const totalViews = userPosts.reduce((sum, post) => sum + post.views, 0);
+
     userData = userData.toObject();
     userData.posts = userPosts;
+    userData.totalViews = totalViews;
 
     res.json({
       status: 200,
@@ -270,9 +305,9 @@ const getUserInfo = async (req, res) => {
     });
   } catch (error) {
     console.log("getUserInfo ERROR: ", error);
-    res.json({
+    return res.json({
       status: 500,
-      message: "Server Error",
+      message: "Internal server error. Please try again later.",
     });
   }
 };
@@ -290,9 +325,9 @@ const getAllUsers = async (req, res) => {
     });
   } catch (error) {
     console.log("getAllUsers ERROR: ", error);
-    res.json({
+    return res.json({
       status: 500,
-      message: "Server Error",
+      message: "Internal server error. Please try again later.",
     });
   }
 };
@@ -305,4 +340,5 @@ export {
   updateUser,
   getUserInfo,
   getAllUsers,
+  checkUsername,
 };
