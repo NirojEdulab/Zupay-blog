@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { Post } from "../models/post.model.js";
 import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
@@ -5,9 +6,17 @@ import { v2 as cloudinary } from "cloudinary";
 
 const getAllPosts = async (req, res) => {
   try {
-    const posts = await Post.find({}).sort({
-      createdAt: -1,
-    });
+    const page = parseInt(req.query.page) || 1;
+    const itemsPerPage = 6;
+    const skip = (page - 1) * itemsPerPage;
+
+    const posts = await Post.find({})
+      .sort({
+        createdAt: -1,
+      })
+      .skip(skip)
+      .limit(itemsPerPage);
+
     res.json({
       status: 200,
       message: "All posts",
@@ -19,8 +28,14 @@ const getAllPosts = async (req, res) => {
 };
 
 const getSinglePost = async (req, res) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    return res.status(400).json({
+      status: 400,
+      message: "Invalid post ID",
+    });
+  }
+
   try {
-    console.log("getSinglePost ==>> ", req.params.id);
     const postId = req.params.id;
     const postData = await Post.findOne({
       _id: postId,
@@ -35,6 +50,9 @@ const getSinglePost = async (req, res) => {
       return;
     }
 
+    postData.views += 1;
+    await postData.save();
+
     await res.json({
       status: 200,
       message: "Post fetched successfully",
@@ -47,8 +65,12 @@ const getSinglePost = async (req, res) => {
 
 const createPost = async (req, res) => {
   try {
-    const { title, content, userId } = req.body;
-    if ([title, content, userId].some((field) => field?.trim() === "")) {
+    const { title, shortDescription, content, userId } = req.body;
+    if (
+      [title, shortDescription, content, userId].some(
+        (field) => field?.trim() === ""
+      )
+    ) {
       res.json({
         status: 400,
         message: "All fields are required.",
@@ -68,11 +90,12 @@ const createPost = async (req, res) => {
       return;
     }
 
-    const postImageLocalPath = req.files?.image[0]?.path;
+    const postImageLocalPath = req.file?.path;
     const postImage = await uploadOnCloudinary(postImageLocalPath);
 
     const post = await Post.create({
       title,
+      shortDescription,
       content,
       author: autherData,
       image: postImage?.url || "",
@@ -100,11 +123,13 @@ const createPost = async (req, res) => {
 
 const updatePost = async (req, res) => {
   try {
-    const postId = req.params.id;
-    const { title, content } = req.body;
-    const image = req.files;
+    console.log("update post called", req.body);
 
-    if (!title && !content && !image) {
+    const postId = req.params.id;
+    const { title, shortDescription, content } = req.body;
+    const image = req.file;
+
+    if (!title && !content && !image && !shortDescription) {
       res.json({
         status: 200,
         message: "No changes made.",
@@ -125,7 +150,7 @@ const updatePost = async (req, res) => {
       return;
     }
 
-    if (!req.user._id.equals(post.author)) {
+    if (!req.user._id.equals(post.author._id)) {
       res.json({
         status: 403,
         message: "Sorry! You can't change the post.",
@@ -134,8 +159,8 @@ const updatePost = async (req, res) => {
       return;
     }
 
-    if (image[0]?.path) {
-      const imageLocalPath = image[0]?.path;
+    if (image?.path) {
+      const imageLocalPath = image?.path;
       const updatedImage = await uploadOnCloudinary(imageLocalPath);
       if (updatedImage.url) {
         post.image = updatedImage.url;
@@ -144,8 +169,10 @@ const updatePost = async (req, res) => {
 
     if (title) post.title = title;
     if (content) post.content = content;
+    if (shortDescription) post.shortDescription = shortDescription;
 
     const updatedPost = await post.save();
+
     res.json({
       status: 200,
       message: "Post updated successfully",

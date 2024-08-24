@@ -2,24 +2,28 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import dbConnent from "./db/index.js";
-import userRoute from './routes/user.route.js';
-import postRoute from './routes/post.route.js';
-import commentRoute from './routes/comment.route.js';
+import authRoute from "./routes/auth.route.js";
+import postRoute from "./routes/post.route.js";
+import commentRoute from "./routes/comment.route.js";
 
 const app = express();
-app.use(cors());
-app.use(express.json({
+app.use(cors({ origin: process.env.CLIENT_API, credentials: true }));
+app.use(
+  express.json({
     limit: "16kb",
-}));
-app.use(express.urlencoded({
+  })
+);
+app.use(
+  express.urlencoded({
     extended: true,
     limit: "16kb",
-}));
+  })
+);
 app.use(express.static("public"));
 app.use(cookieParser());
 
 // Routers
-app.use("/api/users", userRoute);
+app.use("/api/auth", authRoute);
 app.use("/api/posts", postRoute);
 app.use("/api/comment", commentRoute);
 

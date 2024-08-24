@@ -25,7 +25,11 @@ const userSchema = new Schema(
     },
     profilePic: {
       type: String,
-    }
+    },
+    coverImage: {
+      type: String,
+      default: "https://via.placeholder.com/1280x720",
+    },
   },
   { timestamps: true }
 );
