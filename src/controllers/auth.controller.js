@@ -108,8 +108,13 @@ const loginUser = async (req, res) => {
       return;
     }
 
+    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailOrUsername);
+
     const existingUser = await User.findOne({
-      $or: [{ username: emailOrUsername }, { email: emailOrUsername }],
+      $or: [
+        { username: isEmail ? null : emailOrUsername },
+        { email: isEmail ? emailOrUsername.toLowerCase() : null },
+      ].filter((condition) => condition !== null),
     });
 
     if (!existingUser) {
