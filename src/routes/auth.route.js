@@ -19,7 +19,7 @@ router.get("/user/:id", getUserInfo);
 
 // Secured Routes
 router.get("/verify", verifyJWT, verifyToken);
-router.get("/", verifyJWT, getAllUsers);
+// router.get("/", verifyJWT, getAllUsers);
 router.post("/logout", verifyJWT, logoutUser);
 router.put(
   "/update/:userId",
