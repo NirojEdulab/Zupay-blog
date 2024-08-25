@@ -53,9 +53,13 @@ const getSinglePost = async (req, res) => {
       });
       return;
     }
-
-    postData.views += 1;
-    await postData.save();
+    if (
+      req.user &&
+      postData.author._id.toString() !== req.user._id.toString()
+    ) {
+      postData.views += 1;
+      await postData.save();
+    }
 
     await res.json({
       status: 200,

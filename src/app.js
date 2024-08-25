@@ -5,6 +5,7 @@ import dbConnent from "./db/index.js";
 import authRoute from "./routes/auth.route.js";
 import postRoute from "./routes/post.route.js";
 import commentRoute from "./routes/comment.route.js";
+import logger from "./middlewares/logger.js";
 
 const app = express();
 app.use(cors({ origin: process.env.CLIENT_API, credentials: true }));
@@ -21,6 +22,8 @@ app.use(
 );
 app.use(express.static("public"));
 app.use(cookieParser());
+
+app.use(logger);
 
 // Routers
 app.use("/api/auth", authRoute);
