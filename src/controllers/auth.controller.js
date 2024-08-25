@@ -41,24 +41,6 @@ const verifyToken = async (req, res) => {
   }
 };
 
-const checkUsername = async (req, res) => {
-  try {
-    const { username } = req.params;
-    const user = await User.findOne({ username });
-
-    if (user) {
-      return res.json({ available: false });
-    } else {
-      return res.json({ available: true });
-    }
-  } catch (error) {
-    return res.json({
-      status: 500,
-      message: "Internal server error. Please try again later.",
-    });
-  }
-};
-
 const registerUser = async (req, res) => {
   try {
     const { fullName, username, email, password } = req.body;
@@ -340,5 +322,4 @@ export {
   updateUser,
   getUserInfo,
   getAllUsers,
-  checkUsername,
 };
