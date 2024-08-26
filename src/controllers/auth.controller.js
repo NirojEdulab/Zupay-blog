@@ -71,6 +71,7 @@ const registerUser = async (req, res) => {
       fullName,
       email: email.toLowerCase(),
       password,
+      profilePic: "https://avatar.iran.liara.run/username?username=" + username,
     });
 
     const createdUser = await User.findById(user._id).select("-password");
